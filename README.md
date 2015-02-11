@@ -1,0 +1,2 @@
+# varnish
+Docker Varnish Container
