@@ -1,0 +1,31 @@
+#!/bin/bash
+
+DAEMON=/usr/sbin/varnishd
+
+# Include varnish defaults if available
+if [ -f /etc/default/varnish ] ; then
+	cat /etc/default/varnish
+	. /etc/default/varnish 
+fi
+
+# If $DAEMON_OPTS is not set at all in /etc/default/varnish, use minimal useful
+# defaults (Backend at localhost:8080, a common place to put a locally
+# installed application server.)
+DAEMON_OPTS=${DAEMON_OPTS:--b localhost}
+
+check_varnish_config() {
+	$DAEMON ${DAEMON_OPTS} -C -n /tmp > /dev/null && echo "Syntax ok"
+}
+
+start_varnish() {
+	$DAEMON -F ${DAEMON_OPTS}
+}
+
+case "$1" in
+    start)
+    	start_varnish
+    	;;
+    check)
+    	check_varnish_config
+    	;;
+esac
