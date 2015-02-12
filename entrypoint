@@ -1,10 +1,10 @@
 #!/bin/bash
 
+CONFIG=/etc/varnish/default.vcl
 DAEMON=/usr/sbin/varnishd
 
 # Include varnish defaults if available
 if [ -f /etc/default/varnish ] ; then
-	cat /etc/default/varnish
 	. /etc/default/varnish 
 fi
 
@@ -13,12 +13,33 @@ fi
 # installed application server.)
 DAEMON_OPTS=${DAEMON_OPTS:--b localhost}
 
+VARNISH_BACKEND_IP=${VARNISH_BACKEND_IP:-127.0.0.1}
+VARNISH_BACKEND_PORT=${VARNISH_BACKEND_PORT:-8080}
+
+prepare_config() {
+	# Create a backup of the configuration file
+	# Since the test runs during the build process
+	# it will have different ips for the backend and
+	# we don't want to override the original configuration
+	cp ${CONFIG} $1
+
+	# Convert environment variables in the conf to fixed entries
+	# http://stackoverflow.com/questions/21056450/how-to-inject-environment-variables-in-varnish-configuration
+	for name in VARNISH_BACKEND_PORT VARNISH_BACKEND_IP
+	do
+    	eval value=\$$name
+    	sed -i "s|\${${name}}|${value}|g" $1
+	done
+}
+
 check_varnish_config() {
-	$DAEMON ${DAEMON_OPTS} -C -n /tmp > /dev/null && echo "Syntax ok"
+	prepare_config ${CONFIG}.1
+	${DAEMON} ${DAEMON_OPTS} -f ${CONFIG}.1 -C -n /tmp > /dev/null
 }
 
 start_varnish() {
-	$DAEMON -F ${DAEMON_OPTS}
+	prepare_config ${CONFIG}.2
+	${DAEMON} -F -f ${CONFIG}.2 ${DAEMON_OPTS}
 }
 
 case "$1" in

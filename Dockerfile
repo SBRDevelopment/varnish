@@ -10,6 +10,6 @@ ONBUILD COPY default /etc/default/varnish
 
 COPY entrypoint /usr/bin/entrypoint
 
-RUN entrypoint check
+ONBUILD RUN entrypoint check
 
 CMD entrypoint start
