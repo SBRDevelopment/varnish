@@ -3,6 +3,10 @@
 CONFIG=/etc/varnish/default.vcl
 DAEMON=/usr/sbin/varnishd
 
+NGINX_CONFIG=/opt/openresty/nginx/conf/nginx.conf
+NGINX_DAEMON=/opt/openresty/nginx/sbin/nginx
+
+
 # Include varnish defaults if available
 if [ -f /etc/default/varnish ] ; then
 	. /etc/default/varnish 
@@ -37,6 +41,14 @@ check_varnish_config() {
 	${DAEMON} ${DAEMON_OPTS} -f ${CONFIG}.1 -C -n /tmp > /dev/null
 }
 
+check_nginx_config() {
+	${NGINX_DAEMON} -t -c ${NGINX_CONFIG}
+}
+
+start_nginx() {
+	${NGINX_DAEMON} -c ${NGINX_CONFIG}
+}
+
 start_varnish() {
 	prepare_config ${CONFIG}.2
 	${DAEMON} -F -f ${CONFIG}.2 ${DAEMON_OPTS}
@@ -44,9 +56,11 @@ start_varnish() {
 
 case "$1" in
     start)
+		start_nginx
     	start_varnish
     	;;
     check)
-    	check_varnish_config
+		check_nginx_config && \
+		check_varnish_config
     	;;
 esac
