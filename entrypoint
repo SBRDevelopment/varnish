@@ -3,8 +3,8 @@
 CONFIG=/etc/varnish/default.vcl
 DAEMON=/usr/sbin/varnishd
 
-NGINX_CONFIG=/opt/openresty/nginx/conf/nginx.conf
-NGINX_DAEMON=/opt/openresty/nginx/sbin/nginx
+NGINX_CONFIG=/etc/nginx/conf/nginx.conf
+NGINX_DAEMON=/etc/nginx/sbin/nginx
 
 
 # Include varnish defaults if available
